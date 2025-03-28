@@ -1,5 +1,5 @@
 import dbus
-
+import subprocess
 
 class SystemdServiceManager:
     """
@@ -45,11 +45,14 @@ class SystemdServiceManager:
         :param service_name: Name of the service.
         :return: Dictionary with ActiveState and SubState.
         """
-        unit = self.get_unit(service_name)
-        props = dbus.Interface(unit, 'org.freedesktop.DBus.Properties')
-        active_state = props.Get('org.freedesktop.systemd1.Unit', 'ActiveState')
-        sub_state = props.Get('org.freedesktop.systemd1.Unit', 'SubState')
-        return {"ActiveState": active_state, "SubState": sub_state}
+        try:
+            unit = self.get_unit(service_name)
+            props = dbus.Interface(unit, 'org.freedesktop.DBus.Properties')
+            active_state = props.Get('org.freedesktop.systemd1.Unit', 'ActiveState')
+            sub_state = props.Get('org.freedesktop.systemd1.Unit', 'SubState')
+            return {"ActiveState": active_state, "SubState": sub_state}
+        except Exception as e:
+            return {"ActiveState": "invalid", "SubState": f"{e}"}
 
     def start(self, service_name):
         """
@@ -99,8 +102,21 @@ class SystemdServiceManager:
         try:
             # The EnableUnitFiles method expects a list of unit file names.
             self.manager.EnableUnitFiles([service_name], False, True)
+            return True
         except dbus.DBusException as e:
-            raise Exception(f"Error enabling service {service_name}: {e}")
+            return False
+
+    def disable(self, service_name):
+        """
+        Disables a systemd service, preventing it from starting at boot.
+
+        :param service_name: Name of the service (e.g., "ssh.service")
+        """
+        try:
+            self.manager.DisableUnitFiles([service_name], False)
+            return True
+        except dbus.DBusException as e:
+            return False
 
     def get_errors(self, service_name):
         """
@@ -130,3 +146,13 @@ class SystemdServiceManager:
         except dbus.DBusException:
             # If these properties aren't available, provide a fallback message.
             return {"Error": "No additional error information available."}
+
+    def get_journalctl_logs(self, service_name):
+        """
+        Retrieves the latest log entries for a systemd service using journalctl.
+        """
+        try:
+            logs = subprocess.check_output(["journalctl", "-u", service_name, "-n", "20", "--no-pager"]).decode("utf-8")
+            return {"Logs": logs}
+        except subprocess.CalledProcessError as e:
+            return {"Error": f"Failed to retrieve logs: {e}"}
