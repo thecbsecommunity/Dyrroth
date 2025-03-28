@@ -169,7 +169,8 @@ async def reload(interaction: discord.Interaction, hostname: str):
         colour=discord.Color.dark_green()
     )
 
-    embed.set_footer(text="Should take a few seconds to start.") await interaction.followup.send(embed=embed)
+    embed.set_footer(text="Should take a few seconds to start.")
+    await interaction.followup.send(embed=embed)
 
 @bot.event
 async def setup_hook():
