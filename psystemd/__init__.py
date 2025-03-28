@@ -63,8 +63,9 @@ class SystemdServiceManager:
         """
         try:
             self.manager.StartUnit(service_name, "replace")
-        except dbus.DBusException as e:
-            raise Exception(f"Error starting service {service_name}: {e}")
+            return True
+        except Exception as e:
+            return False
 
     def stop(self, service_name):
         """
@@ -75,8 +76,9 @@ class SystemdServiceManager:
         """
         try:
             self.manager.StopUnit(service_name, "replace")
-        except dbus.DBusException as e:
-            raise Exception(f"Error stopping service {service_name}: {e}")
+            return True
+        except Exception as e:
+            return False
 
     def restart(self, service_name):
         """
@@ -87,8 +89,9 @@ class SystemdServiceManager:
         """
         try:
             self.manager.RestartUnit(service_name, "replace")
-        except dbus.DBusException as e:
-            raise Exception(f"Error restarting service {service_name}: {e}")
+            return True
+        except Exception as e:
+            return False
 
     def enable(self, service_name):
         """

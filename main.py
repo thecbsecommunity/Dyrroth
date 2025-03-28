@@ -82,7 +82,12 @@ async def start(interaction: discord.Interaction, service: str):
 
     color = discord.Color.dark_green()
     manager = psystemd.SystemdServiceManager()
-    manager.start(service)
+    if not manager.start(service):
+        embed.description = "Unable to start the service!"
+        embed.set_footer(text="Does the service even exist? (/status)")
+        await interaction.followup.send(embed = embed)
+        return
+
     time.sleep(2)
     service_status = manager.get_unit_status(service)['ActiveState']
     additional_text = ""
@@ -137,7 +142,7 @@ async def disable(interaction: discord.Interaction, service: str):
 
 @bot.tree.command(name="restart", description="Restart a systemd service")
 @discord.app_commands.describe(service="Service name")
-async def start(interaction: discord.Interaction, service: str):
+async def restart(interaction: discord.Interaction, service: str):
     await interaction.response.defer()
     embed = discord.Embed(
         title = "Restarting service...",
@@ -145,7 +150,11 @@ async def start(interaction: discord.Interaction, service: str):
 
     color = discord.Color.dark_green()
     manager = psystemd.SystemdServiceManager()
-    manager.restart(service)
+    if not manager.restart(service):
+        embed.description = "Unable to restart the service!"
+        embed.set_footer(text="Does the service even exist? (/status)")
+        await interaction.followup.send(embed = embed)
+        return
     time.sleep(2)
     service_status = manager.get_unit_status(service)['ActiveState']
     additional_text = ""
@@ -168,7 +177,12 @@ async def stop(interaction: discord.Interaction, service: str):
 
     embed.colour = discord.Color.dark_green()
     manager = psystemd.SystemdServiceManager()
-    manager.stop(service)
+    if not manager.stop(service):
+        embed.description = "Unable to stop the service!"
+        embed.set_footer(text="Is the service even running? (/status)")
+        await interaction.followup.send(embed = embed)
+        return
+
     time.sleep(2)
     service_status = manager.get_unit_status(service)['ActiveState']
     additional_text = ""
