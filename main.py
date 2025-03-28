@@ -147,14 +147,19 @@ async def get_errors(interaction: discord.Interaction, service: str):
 @bot.tree.command(name="reload", description="Reloads the systemd service daemon")
 @discord.app_commands.describe(hostname="Hostname of the machine")
 async def reload(interaction: discord.Interaction, hostname: str):
-    await interaction.response.defer()
+    if socket.gethostname() == hostname:
+        await interaction.response.defer()
+    else:
+        return
 
     predefinedHosnames = {"local": "raven", "cloud": "Rc"}
     if hostname in predefinedHosnames:
         hostname = predefinedHosnames[hostname]
 
     if socket.gethostname() == hostname:
+        print("Reloading!")
         os.system('systemctl daemon-reload')
+
 
     embed = discord.Embed(
         description = "Triggered a daemon reload <:yes3:1350514445633323068>",
