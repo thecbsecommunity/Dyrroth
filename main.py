@@ -148,7 +148,7 @@ async def get_errors(interaction: discord.Interaction, service: str):
 @discord.app_commands.describe(hostname="Hostname of the machine")
 async def reload(interaction: discord.Interaction, hostname: str):
     if not interaction.response.is_done():
-        interaction.response.defer()
+        await interaction.response.defer()
 
     predefinedHosnames = {"local": "raven", "cloud": "Rc"}
     if hostname in predefinedHosnames:
